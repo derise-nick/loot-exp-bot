@@ -13,12 +13,13 @@ async function getSheet() {
   const res = await sheetsApi.spreadsheets.values.get({
     spreadsheetId: sheetIds.strand,
     range,
+    valueRenderOption: "FORMULA", // Without this, image formula cells will return '' which leads to deleting all images when updating
   });
 
   const rows = res.data.values;
   // Exit early if the sheet is empty. This is a sign that we loaded the wrong range or something has gone wrong in the sheet
   if (!rows || rows.length === 0) {
-    console.error("Something went wrong! No data found!");
+    console.error("Something went wrong while loading Google Sheet! No data found!");
     return;
   }
 
@@ -38,22 +39,6 @@ module.exports = {
    * @returns The block number of the created record
    */
   async createBlock(interaction) {
-    // // Load the api, specific sheet, and define the relevant cell range.
-    // const sheets = google.sheets({ version: "v4", auth: getAuthRecord() });
-    // const spreadsheetId = sheetIds.strand;
-    // const range = "Blocks!A2:H";
-    // const res = await sheets.spreadsheets.values.get({
-    //   spreadsheetId,
-    //   range,
-    // });
-
-    // const rows = res.data.values;
-    // // Exit early if the sheet is empty. This is a sign that we loaded the wrong range or something has gone wrong in the sheet
-    // if (!rows || rows.length === 0) {
-    //   console.error("Something went wrong! No data found!");
-    //   return;
-    // }
-
     const { sheetsApi, rows, range, spreadsheetId } = await getSheet();
 
     if (!rows?.length) {
@@ -94,6 +79,11 @@ module.exports = {
       throw err;
     }
   },
+  /**
+   * Updates the entry on the Strand Blocks sheet according to the user-provided block number.
+   * @param {CommandInteraction} interaction - The command interaction triggering block update
+   * @returns The Google Sheets API reponse
+   */
   async reportBlock(interaction) {
     const { sheetsApi, rows, range, spreadsheetId } = await getSheet();
 
@@ -133,6 +123,7 @@ module.exports = {
 
     // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
     try {
+      console.log(rows)
       const result = await sheetsApi.spreadsheets.values.update({
         spreadsheetId,
         range,
@@ -150,6 +141,10 @@ module.exports = {
       throw err;
     }
   },
+  /**
+   * Collates the data from the sheet for reporting status.
+   * @returns An object with reportedCount, twinnedCount, isbCount, claimedCount,
+   */
   async getStatus() {
     const { rows } = await getSheet();
     const reportedCount = rows.reduce(
