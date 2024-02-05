@@ -1,0 +1,31 @@
+[
+  {
+    "name": "jsonTest",
+    "description": "Get status or request/report a block for the strand experiment.",
+    "subCommands": [
+      {
+        "name": "request",
+        "description": "Requests a block of 144 strands. Please attach a screenshot of the tab.",
+        "options": {
+          "attachments": [
+            {
+              "name": "screenshot",
+              "required": true,
+              "description": "The screenshot of the tab of strands with \"two unique bosses\" in the search bar"
+            }
+          ],
+          "integers": [
+            {
+              "name": "twinned",
+              "required": true,
+              "description": "How many strands are twinned?"
+            }
+          ],
+          "strings": [],
+          "numbers": [],
+          "booleans": []
+        }
+      }
+    ]
+  }
+]

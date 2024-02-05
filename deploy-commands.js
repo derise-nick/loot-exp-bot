@@ -2,6 +2,8 @@ require("dotenv").config();
 const { REST, Routes } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
+const jsonProjects = require("./commands/util/project-list.json");
+const jsonCommands = require("./json-commands");
 
 const commands = [];
 // Grab all the command folders from the commands directory you created earlier
@@ -27,6 +29,13 @@ for (const folder of commandFolders) {
     }
   }
 }
+
+// for (const project of jsonProjects) {
+//   const command = jsonCommands.convertToDiscJson(project);
+//   if (command) {
+//     commands.push(command);
+//   }
+// }
 
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(process.env.DISCORD_CLIENT_TOKEN);
