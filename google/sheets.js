@@ -6,12 +6,12 @@ function getAuthRecord() {
   return gAuth.authRecord;
 }
 
-async function getSheet() {
+async function getSheet(sheetId) {
   // Load the api, specific sheet, and define the relevant cell range.
   const sheetsApi = google.sheets({ version: "v4", auth: getAuthRecord() });
-  const range = "Blocks!A2:H";
+  const range = "Blocks!A1:H";
   const res = await sheetsApi.spreadsheets.values.get({
-    spreadsheetId: sheetIds.strand,
+    spreadsheetId: sheetId,
     range,
     valueRenderOption: "FORMULA", // Without this, image formula cells will return '' which leads to deleting all images when updating
   });
@@ -19,148 +19,283 @@ async function getSheet() {
   const rows = res.data.values;
   // Exit early if the sheet is empty. This is a sign that we loaded the wrong range or something has gone wrong in the sheet
   if (!rows || rows.length === 0) {
-    console.error("Something went wrong while loading Google Sheet! No data found!");
+    console.error(
+      "Something went wrong while loading Google Sheet! No data found!"
+    );
     return;
   }
+
+  rows.shift();
 
   return {
     sheetsApi,
     spreadSheet: res,
     rows,
     range,
-    spreadsheetId: sheetIds.strand,
+    spreadsheetId: sheetId,
   };
 }
 
 module.exports = {
-  /**
-   * Creates an entry on the Strand Blocks sheet by appending the next empty block.
-   * @param {CommandInteraction} interaction - The command interaction triggering block creation
-   * @returns The block number of the created record
-   */
-  async createBlock(interaction) {
-    const { sheetsApi, rows, range, spreadsheetId } = await getSheet();
-
-    if (!rows?.length) {
-      return;
-    }
-
-    // Generate next block of values, including the stash screenshot
-    let blockNo = rows.length + 1;
-    let imageCell = `=IMAGE("${
-      interaction.options.getAttachment("screenshot").url
-    }")`;
-    let values = [
-      [
-        blockNo,
-        interaction.user.username,
-        interaction.options.get("twinned").value.toString(),
-        imageCell,
-      ],
-    ];
-    const resource = {
-      values,
-    };
-
-    // Append the row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshot, until the api natively supports BLOBs
-    try {
-      const result = await sheetsApi.spreadsheets.values.append({
-        spreadsheetId,
-        range,
-        valueInputOption: "USER_ENTERED",
-        resource,
-      });
-      console.log(
-        `Block #${blockNo} created. ${result.data.updates.updatedCells} cells appended.`
+  strand: {
+    /**
+     * Creates an entry on the Strand Blocks sheet by appending the next empty block.
+     * @param {CommandInteraction} interaction - The command interaction triggering block creation
+     * @returns The block number of the created record
+     */
+    async createBlock(interaction) {
+      const { sheetsApi, rows, range, spreadsheetId } = await getSheet(
+        sheetIds.strand
       );
-      return blockNo;
-    } catch (err) {
-      // TODO - Handle exception
-      throw err;
-    }
-  },
-  /**
-   * Updates the entry on the Strand Blocks sheet according to the user-provided block number.
-   * @param {CommandInteraction} interaction - The command interaction triggering block update
-   * @returns The Google Sheets API reponse
-   */
-  async reportBlock(interaction) {
-    const { sheetsApi, rows, range, spreadsheetId } = await getSheet();
 
-    if (!rows?.length) {
-      return;
-    }
+      if (!rows?.length) {
+        return;
+      }
 
-    let blockNo = interaction.options.get("blockno")?.value?.toString();
-    if (rows.find((r) => r[0] == blockNo)?.[4]) {
-      return { error: "PREVIOUSLY_REPORTED" };
-    }
-
-    // Update row for provided block, including ISB screenshots, if present
-    let isbCount = interaction.options.get("isbcount")?.value;
-    let imageCell1, imageCell2, imageCell3;
-    if (isbCount && isbCount > 0) {
-      imageCell1 = `=IMAGE("${
-        interaction.options.getAttachment("screenshot1")?.url
+      // Generate next block of values, including the stash screenshot
+      let blockNo = rows.length + 1;
+      let imageCell = `=IMAGE("${
+        interaction.options.getAttachment("screenshot").url
       }")`;
-      imageCell2 = `=IMAGE("${
-        interaction.options.getAttachment("screenshot2")?.url
-      }")`;
-      imageCell3 = `=IMAGE("${
-        interaction.options.getAttachment("screenshot3")?.url
-      }")`;
-    }
-    let values = [
-      null,
-      null,
-      null,
-      null, // null is ignored, which is desired since we don't want to change the first 4 values
-      isbCount.toString(),
-      imageCell1,
-      imageCell2,
-      imageCell3,
-    ];
+      let values = [
+        [
+          blockNo,
+          interaction.user.username,
+          interaction.options.get("twinned").value.toString(),
+          imageCell,
+        ],
+      ];
+      const resource = {
+        values,
+      };
 
-    // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
-    try {
-      const result = await sheetsApi.spreadsheets.values.update({
-        spreadsheetId,
-        range,
-        resource: { values: rows.map((r) => (r[0] == blockNo ? values : r)) },
-        valueInputOption: "USER_ENTERED",
-      });
-      console.log(
-        `Block #${blockNo} updated. ${
-          result.data?.updatedCells || result.data?.updates?.updatedCells
-        } cells updated.`
+      // Append the row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshot, until the api natively supports BLOBs
+      try {
+        const result = await sheetsApi.spreadsheets.values.append({
+          spreadsheetId,
+          range,
+          valueInputOption: "USER_ENTERED",
+          resource,
+        });
+        console.log(
+          `Block #${blockNo} created. ${result.data.updates.updatedCells} cells appended.`
+        );
+        return blockNo;
+      } catch (err) {
+        // TODO - Handle exception
+        throw err;
+      }
+    },
+    /**
+     * Updates the entry on the Strand Blocks sheet according to the user-provided block number.
+     * @param {CommandInteraction} interaction - The command interaction triggering block update
+     * @returns The Google Sheets API reponse
+     */
+    async reportBlock(interaction) {
+      const { sheetsApi, rows, range, spreadsheetId } = await getSheet(
+        sheetIds.strand
       );
-      return result;
-    } catch (err) {
-      // TODO - Handle exception
-      throw err;
-    }
+
+      if (!rows?.length) {
+        return;
+      }
+
+      let blockNo = interaction.options.get("blockno")?.value?.toString();
+      if (rows.find((r) => r[0] == blockNo)?.[4]) {
+        return { error: "PREVIOUSLY_REPORTED" };
+      }
+
+      // Update row for provided block, including ISB screenshots, if present
+      let isbCount = interaction.options.get("isbcount")?.value;
+      let imageCell1, imageCell2, imageCell3;
+      if (isbCount && isbCount > 0) {
+        imageCell1 = `=IMAGE("${
+          interaction.options.getAttachment("screenshot1")?.url
+        }")`;
+        imageCell2 = `=IMAGE("${
+          interaction.options.getAttachment("screenshot2")?.url
+        }")`;
+        imageCell3 = `=IMAGE("${
+          interaction.options.getAttachment("screenshot3")?.url
+        }")`;
+      }
+      let values = [
+        null,
+        null,
+        null,
+        null, // null is ignored, which is desired since we don't want to change the first 4 values
+        isbCount.toString(),
+        imageCell1,
+        imageCell2,
+        imageCell3,
+      ];
+
+      // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
+      try {
+        const result = await sheetsApi.spreadsheets.values.update({
+          spreadsheetId,
+          range,
+          resource: { values: rows.map((r) => (r[0] == blockNo ? values : r)) },
+          valueInputOption: "USER_ENTERED",
+        });
+        console.log(
+          `Block #${blockNo} updated. ${
+            result.data?.updatedCells || result.data?.updates?.updatedCells
+          } cells updated.`
+        );
+        return result;
+      } catch (err) {
+        // TODO - Handle exception
+        throw err;
+      }
+    },
+    /**
+     * Collates the data from the sheet for reporting status.
+     * @returns An object with reportedCount, twinnedCount, isbCount, claimedCount,
+     */
+    async getStatus() {
+      const { rows } = await getSheet(sheetIds.strand);
+      const reportedCount = rows.reduce(
+        (acc, row) => acc + (!!row[4] ? 1 : 0),
+        0
+      );
+      const twinnedCount = rows.reduce(
+        (acc, row) => acc + (!!row[4] ? Number(row[2]) || 0 : 0),
+        0
+      );
+      const isbCount = rows.reduce(
+        (acc, row) => acc + (Number(row[4]) || 0),
+        0
+      );
+      const claimedCount = rows.length;
+      return {
+        reportedCount,
+        twinnedCount,
+        isbCount,
+        claimedCount,
+      };
+    },
   },
-  /**
-   * Collates the data from the sheet for reporting status.
-   * @returns An object with reportedCount, twinnedCount, isbCount, claimedCount,
-   */
-  async getStatus() {
-    const { rows } = await getSheet();
-    const reportedCount = rows.reduce(
-      (acc, row) => acc + (!!row[4] ? 1 : 0),
-      0
-    );
-    const twinnedCount = rows.reduce(
-      (acc, row) => acc + (!!row[4] ? Number(row[2]) || 0 : 0),
-      0
-    );
-    const isbCount = rows.reduce((acc, row) => acc + (Number(row[4]) || 0), 0);
-    const claimedCount = rows.length;
-    return {
-      reportedCount,
-      twinnedCount,
-      isbCount,
-      claimedCount,
-    };
+  heist: {
+    /**
+     * Creates an entry on the Heist Blocks sheet by appending the next empty block.
+     * @param {CommandInteraction} interaction - The command interaction triggering block creation
+     * @returns The block number of the created record
+     */
+    async createBlock(interaction) {
+      const { sheetsApi, rows, range, spreadsheetId } = await getSheet(
+        sheetIds.heist
+      );
+
+      // If range didn't return, this means there was an error (which we've already logged)
+      if (!range) {
+        return;
+      }
+
+      // Generate next block of values, including the stash screenshot
+      let blockNo = rows.length + 1;
+      let tabScreenshotValue = `=IMAGE("${
+        interaction.options.getAttachment("tabscreenshot").url
+      }")`;
+      let vinderiScreenshotValue = `=IMAGE("${
+        interaction.options.getAttachment("vinderiscreenshot").url
+      }")`;
+      let values = [
+        [
+          blockNo,
+          interaction.user.username,
+          tabScreenshotValue,
+          vinderiScreenshotValue,
+        ],
+      ];
+      const resource = {
+        values,
+      };
+
+      // Append the row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshot, until the api natively supports BLOBs
+      try {
+        const result = await sheetsApi.spreadsheets.values.append({
+          spreadsheetId,
+          range,
+          valueInputOption: "USER_ENTERED",
+          resource,
+        });
+        console.log(
+          `Block #${blockNo} created. ${result.data.updates.updatedCells} cells appended.`
+        );
+        return blockNo;
+      } catch (err) {
+        // TODO - Handle exception
+        throw err;
+      }
+    },
+    /**
+     * Updates the entry on the Heist Blocks sheet according to the user-provided block number.
+     * @param {CommandInteraction} interaction - The command interaction triggering block update
+     * @returns The Google Sheets API reponse
+     */
+    async reportBlock(interaction) {
+      const { sheetsApi, rows, range, spreadsheetId } = await getSheet(
+        sheetIds.heist
+      );
+
+      // If range didn't return, this means there was an error (which we've already logged)
+      if (!range) {
+        return;
+      }
+
+      let blockNo = interaction.options.get("blockno")?.value?.toString();
+      if (rows.find((r) => r[0] == blockNo)?.[5]) {
+        return { error: "PREVIOUSLY_REPORTED" };
+      }
+
+      // Update row for provided block, including ISB screenshots, if present
+      const tabScreenshotCell = `=IMAGE("${
+        interaction.options.getAttachment("tabscreenshot")?.url
+      }")`;
+
+      let values = [
+        null,
+        null,
+        null,
+        null, // null is ignored, which is desired since we don't want to change the first 4 values
+        tabScreenshotCell,
+      ];
+
+      // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
+      try {
+        const result = await sheetsApi.spreadsheets.values.update({
+          spreadsheetId,
+          range,
+          resource: { values: rows.map((r) => (r[0] == blockNo ? values : r)) },
+          valueInputOption: "USER_ENTERED",
+        });
+        console.log(
+          `Block #${blockNo} updated. ${
+            result.data?.updatedCells || result.data?.updates?.updatedCells
+          } cells updated.`
+        );
+        return result;
+      } catch (err) {
+        // TODO - Handle exception
+        throw err;
+      }
+    },
+    /**
+     * Collates the data from the sheet for reporting status.
+     * @returns An object with reportedCount, twinnedCount, isbCount, claimedCount,
+     */
+    async getStatus() {
+      const { rows } = await getSheet(sheetIds.heist);
+      const reportedCount = rows.reduce(
+        (acc, row) => acc + (!!row[4] ? 1 : 0),
+        0
+      );
+      const claimedCount = rows.length;
+      return {
+        reportedCount,
+        claimedCount,
+      };
+    },
   },
 };
