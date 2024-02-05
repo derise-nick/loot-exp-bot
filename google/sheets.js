@@ -123,7 +123,6 @@ module.exports = {
 
     // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
     try {
-      console.log(rows)
       const result = await sheetsApi.spreadsheets.values.update({
         spreadsheetId,
         range,
