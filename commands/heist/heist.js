@@ -206,13 +206,13 @@ module.exports = {
               option
                 .setName("blockno")
                 .setDescription("What was your block number?")
-                .setMinValue(0)
+                .setMinValue(1)
                 .setMaxValue(50)
                 .setRequired(true)
             )
             .addIntegerOption((option) =>
               option
-                .setName("delirium")
+                .setName("deliriumchests")
                 .setDescription("How many delirium chests did you open?")
                 .setMinValue(0)
                 .setMaxValue(150)
@@ -247,7 +247,7 @@ module.exports = {
                 .setName("simsplinters")
                 .setDescription("How many simulacrum splinters did you obtain?")
                 .setMinValue(0)
-                .setMaxValue(150)
+                .setMaxValue(1000)
                 .setRequired(true)
             )
             .addIntegerOption((option) =>
@@ -298,13 +298,22 @@ module.exports = {
         .setDescription("Prints current status of reported data.")
     ),
   async execute(interaction) {
-    console.log(interaction.options.getSubcommand());
+    if (interaction.options?.getSubcommandGroup() == 'report') {
+      switch (interaction.options.getSubcommand()) {
+        case "delirium":
+          await handleDelirium(interaction);
+          break;
+        case "catalysts":
+          await handleCatalyst(interaction);
+          break;
+        case "ultimatum":
+          await handleUltimatum(interaction);
+          break;
+      }
+    }
     switch (interaction.options.getSubcommand()) {
       case "request":
         await handleRequest(interaction);
-        break;
-      case "report":
-        await handleReport(interaction);
         break;
       case "status":
         await handleStatus(interaction);
@@ -330,30 +339,93 @@ async function handleRequest(interaction) {
     .catch(console.error);
 }
 
-async function handleReport(interaction) {
+async function handleDelirium(interaction) {
+  const blockNo = interaction.options.get("blockno").value;
+  const result = await gSheets.heist.reportBlock(interaction);
+  const success = !!result && !result.error;
+  const embeddedResponse = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setTitle(`Block #${blockNo} Delirium Reported`)
+    .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
+    .setDescription(`Request registered by @${interaction.user.username}. `)
+    .addFields(
+      { name: 'blockno', value: blockNo?.toString(), inline: true },
+      { name: 'deliriumchests', value: interaction.options.get('deliriumchests')?.value?.toString(), inline: true },
+      { name: 'smallcluster', value: interaction.options.get('smallcluster')?.value?.toString(), inline: true },
+      { name: 'medcluster', value: interaction.options.get('medcluster')?.value?.toString(), inline: true },
+      { name: 'lgcluster', value: interaction.options.get('lgcluster')?.value?.toString(), inline: true },
+      { name: 'simsplinters', value: interaction.options.get('simsplinters')?.value?.toString(), inline: true },
+      { name: 'twentydeli', value: interaction.options.get('twentydeli')?.value?.toString(), inline: true },
+      { name: 'fortydeli', value: interaction.options.get('fortydeli')?.value?.toString(), inline: true },
+      { name: 'sixtydeli', value: interaction.options.get('sixtydeli')?.value?.toString(), inline: true },
+      { name: 'eightydeli', value: interaction.options.get('eightydeli')?.value?.toString(), inline: true },
+      { name: 'fulldeli', value: interaction.options.get('fulldeli')?.value?.toString(), inline: true }
+    )
+    .setTimestamp();
+
+  await replyWithEmbed(success, interaction, embeddedResponse);
+}
+
+async function handleUltimatum(interaction) {
   const tabScreenshot = interaction.options.getAttachment("tabscreenshot");
   const blockNo = interaction.options.get("blockno").value;
   const result = await gSheets.heist.reportBlock(interaction);
   const success = !!result && !result.error;
   const embeddedResponse = new EmbedBuilder()
     .setColor(0x0099ff)
-    .setTitle(`Block #${blockNo} Reported`)
+    .setTitle(`Block #${blockNo} Ultimatum Reported`)
     .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
-    .setDescription(`Request registered by @${interaction.user.username}`)
+    .setDescription(`Request registered by @${interaction.user.username}.`)
     .setImage(tabScreenshot?.url)
+    .addFields(
+      { name: 'ultimatumchests', value: interaction.options.get('ultimatumchests')?.value?.toString() },
+      { name: 'rustedulti', value: interaction.options.get('rustedulti')?.value?.toString() },
+      { name: 'polishedulti', value: interaction.options.get('polishedulti')?.value?.toString() },
+      { name: 'gildedulti', value: interaction.options.get('gildedulti')?.value?.toString() },
+      { name: 'wingedulti', value: interaction.options.get('wingedulti')?.value?.toString() }
+    )
     .setTimestamp();
 
+  await replyWithEmbed(success, interaction, embeddedResponse);
+}
+
+async function handleCatalyst(interaction) {
+  const blockNo = interaction.options.get("blockno").value;
+  const result = await gSheets.heist.reportBlock(interaction);
+  const success = !!result && !result.error;
+  const embeddedResponse = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setTitle(`Block #${blockNo} Catalysts Reported`)
+    .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
+    .setDescription(`Request registered by @${interaction.user.username}.`)
+    .addFields(
+      { name: 'Abrasive Catalysts', value: interaction.options.get('abrasive')?.value?.toString(), inline: true },
+      { name: 'Accelerating Catalysts', value: interaction.options.get('accelerating')?.value?.toString(), inline: true },
+      { name: 'Fertile Catalysts', value: interaction.options.get('fertile')?.value?.toString(), inline: true },
+      { name: 'Imbued Catalysts', value: interaction.options.get('imbued')?.value?.toString(), inline: true },
+      { name: 'Intrinsic Catalysts', value: interaction.options.get('intrinsic')?.value?.toString(), inline: true },
+      { name: 'Noxious Catalysts', value: interaction.options.get('noxious')?.value?.toString(), inline: true },
+      { name: 'Prismatic Catalysts', value: interaction.options.get('prismatic')?.value?.toString(), inline: true },
+      { name: 'Tempering Catalysts', value: interaction.options.get('tempering')?.value?.toString(), inline: true },
+      { name: 'Turbulent Catalysts', value: interaction.options.get('turbulent')?.value?.toString(), inline: true },
+      { name: 'Unstable Catalysts', value: interaction.options.get('unstable')?.value?.toString(), inline: true },
+    )
+    .setTimestamp();
+
+  await replyWithEmbed(success, interaction, embeddedResponse);
+}
+
+async function replyWithEmbed(success, interaction, embeddedResponse) {
   if (success) {
     await interaction
       .reply({ embeds: [embeddedResponse], ephemeral: false })
-      .then(() => console.log("Block record reply sent."))
+      .then(() => console.log("Block report reply sent."))
       .catch(console.error);
   } else {
     await interaction
       .reply({
         ephemeral: true,
-        content:
-          "Something went wrong! Please ensure your block number is correct and try again. If you've already reported your result and need to make a change, please contact a mod.",
+        content: "Something went wrong! Please ensure your block number is correct and try again. If you've already reported your result and need to make a change, please contact a mod.",
       })
       .then(() => console.log("Google sheets error reply sent."))
       .catch(console.error);

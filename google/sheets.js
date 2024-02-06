@@ -9,7 +9,7 @@ function getAuthRecord() {
 async function getSheet(sheetId) {
   // Load the api, specific sheet, and define the relevant cell range.
   const sheetsApi = google.sheets({ version: "v4", auth: getAuthRecord() });
-  const range = "Blocks!A1:H";
+  const range = "Blocks!A1:AE";
   const res = await sheetsApi.spreadsheets.values.get({
     spreadsheetId: sheetId,
     range,
@@ -24,8 +24,6 @@ async function getSheet(sheetId) {
     );
     return;
   }
-
-  rows.shift();
 
   return {
     sheetsApi,
@@ -53,10 +51,9 @@ module.exports = {
       }
 
       // Generate next block of values, including the stash screenshot
-      let blockNo = rows.length + 1;
-      let imageCell = `=IMAGE("${
-        interaction.options.getAttachment("screenshot").url
-      }")`;
+      let blockNo = rows.length;
+      let imageCell = `=IMAGE("${interaction.options.getAttachment("screenshot").url
+        }")`;
       let values = [
         [
           blockNo,
@@ -109,15 +106,9 @@ module.exports = {
       let isbCount = interaction.options.get("isbcount")?.value;
       let imageCell1, imageCell2, imageCell3;
       if (isbCount && isbCount > 0) {
-        imageCell1 = `=IMAGE("${
-          interaction.options.getAttachment("screenshot1")?.url
-        }")`;
-        imageCell2 = `=IMAGE("${
-          interaction.options.getAttachment("screenshot2")?.url
-        }")`;
-        imageCell3 = `=IMAGE("${
-          interaction.options.getAttachment("screenshot3")?.url
-        }")`;
+        imageCell1 = `=IMAGE("${interaction.options.getAttachment("screenshot1")?.url}")`;
+        imageCell2 = `=IMAGE("${interaction.options.getAttachment("screenshot2")?.url}")`;
+        imageCell3 = `=IMAGE("${interaction.options.getAttachment("screenshot3")?.url}")`;
       }
       let values = [
         null,
@@ -139,8 +130,7 @@ module.exports = {
           valueInputOption: "USER_ENTERED",
         });
         console.log(
-          `Block #${blockNo} updated. ${
-            result.data?.updatedCells || result.data?.updates?.updatedCells
+          `Block #${blockNo} updated. ${result.data?.updatedCells || result.data?.updates?.updatedCells
           } cells updated.`
         );
         return result;
@@ -193,19 +183,17 @@ module.exports = {
       }
 
       // Generate next block of values, including the stash screenshot
-      let blockNo = rows.length + 1;
-      let tabScreenshotValue = `=IMAGE("${
-        interaction.options.getAttachment("tabscreenshot").url
-      }")`;
-      let vinderiScreenshotValue = `=IMAGE("${
-        interaction.options.getAttachment("vinderiscreenshot").url
-      }")`;
+      let blockNo = rows.length;
+      let tabScreenshotValue = `=IMAGE("${interaction.options.getAttachment("tabscreenshot").url}")`;
+      let vinderiScreenshotValue = `=IMAGE("${interaction.options.getAttachment("vinderiscreenshot").url}")`;
+      let trinketScreenshotValue = `=IMAGE("${interaction.options.getAttachment("trinketscreenshot").url}")`;
       let values = [
         [
           blockNo,
           interaction.user.username,
           tabScreenshotValue,
           vinderiScreenshotValue,
+          trinketScreenshotValue
         ],
       ];
       const resource = {
@@ -245,22 +233,14 @@ module.exports = {
       }
 
       let blockNo = interaction.options.get("blockno")?.value?.toString();
-      if (rows.find((r) => r[0] == blockNo)?.[5]) {
+      const subCommand = interaction.options.getSubcommand()
+      const reportStartIndex = subCommand == 'ultimatum' ? 5 : subCommand == 'catalysts' ? 11 : 21
+      if (rows.find((r) => r[0] == blockNo)?.[reportStartIndex]) {
         return { error: "PREVIOUSLY_REPORTED" };
       }
 
       // Update row for provided block, including ISB screenshots, if present
-      const tabScreenshotCell = `=IMAGE("${
-        interaction.options.getAttachment("tabscreenshot")?.url
-      }")`;
-
-      let values = [
-        null,
-        null,
-        null,
-        null, // null is ignored, which is desired since we don't want to change the first 4 values
-        tabScreenshotCell,
-      ];
+      let values = getValues(interaction);
 
       // Update the appropriate row to the sheet. We use `USER_ENTERED` because we're using a formula for the screenshots, until the api natively supports BLOBs
       try {
@@ -271,8 +251,7 @@ module.exports = {
           valueInputOption: "USER_ENTERED",
         });
         console.log(
-          `Block #${blockNo} updated. ${
-            result.data?.updatedCells || result.data?.updates?.updatedCells
+          `Block #${blockNo} updated. ${result.data?.updatedCells || result.data?.updates?.updatedCells
           } cells updated.`
         );
         return result;
@@ -299,3 +278,97 @@ module.exports = {
     },
   },
 };
+
+function getValues(interaction) {
+  switch (interaction.options.getSubcommand()) {
+    case 'delirium':
+      return getDeliValues(interaction);
+    case 'catalysts':
+      return getCatalystValues(interaction);
+    case 'ultimatum':
+      return getUltiValues(interaction);
+  }
+}
+
+function getDeliValues(interaction) {
+  const deliriumchests = interaction.options.get('deliriumchests')?.value?.toString()
+  const smallcluster = interaction.options.get('smallcluster')?.value?.toString()
+  const medcluster = interaction.options.get('medcluster')?.value?.toString()
+  const lgcluster = interaction.options.get('lgcluster')?.value?.toString()
+  const simsplinters = interaction.options.get('simsplinters')?.value?.toString()
+  const twentydeli = interaction.options.get('twentydeli')?.value?.toString()
+  const fortydeli = interaction.options.get('fortydeli')?.value?.toString()
+  const sixtydeli = interaction.options.get('sixtydeli')?.value?.toString()
+  const eightydeli = interaction.options.get('eightydeli')?.value?.toString()
+  const fulldeli = interaction.options.get('fulldeli')?.value?.toString()
+
+  const values = []
+  for (let i = 0; i < 21; i++) {
+    values.push(null);
+  }
+  return values.concat([
+    deliriumchests,
+    smallcluster,
+    medcluster,
+    lgcluster,
+    simsplinters,
+    twentydeli,
+    fortydeli,
+    sixtydeli,
+    eightydeli,
+    fulldeli
+  ]);
+}
+
+function getUltiValues(interaction) {
+  const ultimatumchests = interaction.options.get('ultimatumchests')?.value?.toString()
+  const rustedulti = interaction.options.get('rustedulti')?.value?.toString()
+  const polishedulti = interaction.options.get('polishedulti')?.value?.toString()
+  const gildedulti = interaction.options.get('gildedulti')?.value?.toString()
+  const wingedulti = interaction.options.get('wingedulti')?.value?.toString()
+
+  let values = [
+    null,
+    null,
+    null,
+    null,
+    null,
+    `=IMAGE("${interaction.options.getAttachment("tabscreenshot")?.url}")`,
+    ultimatumchests,
+    rustedulti,
+    polishedulti,
+    gildedulti,
+    wingedulti
+  ];
+  return values;
+}
+
+function getCatalystValues(interaction) {
+  const abrasive = interaction.options.get('abrasive')?.value?.toString()
+  const accelerating = interaction.options.get('accelerating')?.value?.toString()
+  const fertile = interaction.options.get('fertile')?.value?.toString()
+  const imbued = interaction.options.get('imbued')?.value?.toString()
+  const intrinsic = interaction.options.get('intrinsic')?.value?.toString()
+  const noxious = interaction.options.get('noxious')?.value?.toString()
+  const prismatic = interaction.options.get('prismatic')?.value?.toString()
+  const tempering = interaction.options.get('tempering')?.value?.toString()
+  const turbulent = interaction.options.get('turbulent')?.value?.toString()
+  const unstable = interaction.options.get('unstable')?.value?.toString()
+
+  const values = []
+  for (let i = 0; i < 11; i++) {
+    values.push(null);
+  }
+  return values.concat([
+    abrasive,
+    accelerating,
+    fertile,
+    imbued,
+    intrinsic,
+    noxious,
+    prismatic,
+    tempering,
+    turbulent,
+    unstable,
+  ]);
+}
