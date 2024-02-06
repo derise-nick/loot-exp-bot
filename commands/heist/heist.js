@@ -40,8 +40,8 @@ module.exports = {
             .setDescription("The screenshot of your heist trinket")
         )
     )
-    .addSubcommand((subCommand) =>
-      subCommand
+    .addSubcommandGroup((subCommandGroup) =>
+      subCommandGroup
         .setName("report")
         .setDescription(
           "Reports results for a heist contract block. Please attach screenshots of the reward stash tab."
