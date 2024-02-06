@@ -46,19 +46,250 @@ module.exports = {
         .setDescription(
           "Reports results for a heist contract block. Please attach screenshots of the reward stash tab."
         )
-        .addIntegerOption((option) =>
-          option
-            .setName("blockno")
-            .setDescription("What was your block number?")
-            .setMinValue(0)
-            .setMaxValue(50)
-            .setRequired(true)
+        .addSubcommand((subCommand) =>
+          subCommand
+            .setName('ultimatum')
+            .setDescription('Reports ultimatum chests and rewards')
+            .addIntegerOption((option) =>
+              option
+                .setName("blockno")
+                .setDescription("What was your block number?")
+                .setMinValue(0)
+                .setMaxValue(50)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("ultimatumchests")
+                .setDescription("How many ultimatum chests did you open?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("rustedulti")
+                .setDescription("How many rusted ultimatum scarabs did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("polishedulti")
+                .setDescription("How many polished ultimatum scarabs did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("gildedulti")
+                .setDescription("How many gilded ultimatum scarabs did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("wingedulti")
+                .setDescription("How many winged ultimatum scarabs did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addAttachmentOption((option) =>
+              option
+                .setRequired(true)
+                .setName("tabscreenshot")
+                .setDescription("The screenshot of the 12x12 tab of non-core drops")
+            )
         )
-        .addAttachmentOption((option) =>
-          option
-            .setRequired(false)
-            .setName("tabscreenshot")
-            .setDescription("The screenshot of the 12x12 tab of non-core drops")
+        .addSubcommand((subCommand) =>
+          subCommand
+            .setName('catalysts')
+            .setDescription('Reports ultimatum chests and rewards')
+            .addIntegerOption((option) =>
+              option
+                .setName("blockno")
+                .setDescription("What was your block number?")
+                .setMinValue(0)
+                .setMaxValue(50)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("abrasive")
+                .setDescription("How many abrasive catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("accelerating")
+                .setDescription("How many accelerating catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("fertile")
+                .setDescription("How many fertile catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("imbued")
+                .setDescription("How many imbued catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("intrinsic")
+                .setDescription("How many intrinsic catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("noxious")
+                .setDescription("How many noxious catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("prismatic")
+                .setDescription("How many prismatic catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("tempering")
+                .setDescription("How many tempering catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("turbulent")
+                .setDescription("How many turbulent catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("unstable")
+                .setDescription("How many unstable catalysts did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+        )
+        .addSubcommand((subCommand) =>
+          subCommand
+            .setName('delirium')
+            .setDescription('Reports delirium chests and rewards')
+            .addIntegerOption((option) =>
+              option
+                .setName("blockno")
+                .setDescription("What was your block number?")
+                .setMinValue(0)
+                .setMaxValue(50)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("delirium")
+                .setDescription("How many delirium chests did you open?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("smallcluster")
+                .setDescription("How many small cluster jewels did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("medcluster")
+                .setDescription("How many medium cluster jewels did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("lgcluster")
+                .setDescription("How many large cluster jewels did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("simsplinters")
+                .setDescription("How many simulacrum splinters did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("twentydeli")
+                .setDescription("How many 20% delirious maps did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("fortydeli")
+                .setDescription("How many 40% delirious maps did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("sixtydeli")
+                .setDescription("How many 60% delirious maps did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("eightydeli")
+                .setDescription("How many 80% delirious maps did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
+            .addIntegerOption((option) =>
+              option
+                .setName("fulldeli")
+                .setDescription("How many 100% delirious maps did you obtain?")
+                .setMinValue(0)
+                .setMaxValue(150)
+                .setRequired(true)
+            )
         )
     )
     .addSubcommand((subCommand) =>
