@@ -233,9 +233,7 @@ module.exports = {
       }
 
       let blockNo = interaction.options.get("blockno")?.value?.toString();
-      const subCommand = interaction.options.getSubcommand()
-      const reportStartIndex = subCommand == 'ultimatum' ? 5 : subCommand == 'catalysts' ? 11 : 21
-      if (rows.find((r) => r[0] == blockNo)?.[reportStartIndex]) {
+      if (await this.isSubcommandReported(blockNo, interaction.options.getSubcommand(), rows)) {
         return { error: "PREVIOUSLY_REPORTED" };
       }
 
@@ -275,6 +273,23 @@ module.exports = {
         reportedCount,
         claimedCount,
       };
+    },
+    /**
+     * Checks if range for given subcommand has already been reported for the given block.
+     * @returns True if cells are populated in the sheet for given subcommand and block number
+     */
+    async isSubcommandReported(blockNo, subCommand, loadedRows = undefined) {
+      const reportStartIndex = subCommand == 'ultimatum' ? 5 : subCommand == 'catalysts' ? 11 : 21
+      if (loadedRows)
+      {
+        console.log(loadedRows.find((r) => r[0] == blockNo)?.[reportStartIndex])
+        return !!(loadedRows.find((r) => r[0] == blockNo)?.[reportStartIndex])
+      } else {
+        const { rows } = await getSheet(sheetIds.heist);
+        console.log(rows)
+        console.log(rows.find((r) => r[0] == blockNo)?.[reportStartIndex])
+        return !!(rows.find((r) => r[0] == blockNo)?.[reportStartIndex])
+      }
     },
   },
 };
