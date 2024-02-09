@@ -265,8 +265,8 @@ module.exports = {
     async getStatus() {
       const { rows } = await getSheet(sheetIds.heist);
       const reportedCount = rows.reduce(
-        (acc, row) => acc + (!!row[4] ? 1 : 0),
-        0
+        (acc, row, i) => acc + ((i > 0 && !!row[4]) ? 1 : 0),
+        0,
       );
       const claimedCount = rows.length;
       return {
@@ -282,12 +282,9 @@ module.exports = {
       const reportStartIndex = subCommand == 'ultimatum' ? 5 : 21
       if (loadedRows)
       {
-        console.log(loadedRows.find((r) => r[0] == blockNo)?.[reportStartIndex])
         return !!(loadedRows.find((r) => r[0] == blockNo)?.[reportStartIndex])
       } else {
         const { rows } = await getSheet(sheetIds.heist);
-        console.log(rows)
-        console.log(rows.find((r) => r[0] == blockNo)?.[reportStartIndex])
         return !!(rows.find((r) => r[0] == blockNo)?.[reportStartIndex])
       }
     },

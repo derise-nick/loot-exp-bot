@@ -330,37 +330,40 @@ async function handleDelirium(interaction) {
   const blockNo = interaction.options.get("blockno").value;
   const result = await gSheets.heist.reportBlock(interaction);
   const ultiReported = await gSheets.heist.isSubcommandReported(blockNo, 'ultimatum');
-  const success = !!result && !result.error;
   const embeddedResponse = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle(`Block #${blockNo} Delirium Reported`)
     .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
     .setDescription(`Request registered by @${interaction.user.username}. `)
     .addFields(
-      { name: 'Block Number', value: blockNo?.toString(), inline: true },
-      { name: 'Delirium Chests', value: interaction.options.get('deliriumchests')?.value?.toString(), inline: true },
+      { name: 'Delirium Chests', value: interaction.options.get('deliriumchests')?.value?.toString(), inline: false },
       { name: 'Small Clusters', value: interaction.options.get('smallcluster')?.value?.toString(), inline: true },
       { name: 'Medium Clusters', value: interaction.options.get('medcluster')?.value?.toString(), inline: true },
       { name: 'Large Clusters', value: interaction.options.get('lgcluster')?.value?.toString(), inline: true },
-      { name: 'Simulacrum Splinters', value: interaction.options.get('simsplinters')?.value?.toString(), inline: true },
+      { name: 'Simulacrum Splinters', value: interaction.options.get('simsplinters')?.value?.toString(), inline: false },
       { name: '20% Deli Maps', value: interaction.options.get('twentydeli')?.value?.toString(), inline: true },
       { name: '40% Deli Maps', value: interaction.options.get('fortydeli')?.value?.toString(), inline: true },
       { name: '60% Deli Maps', value: interaction.options.get('sixtydeli')?.value?.toString(), inline: true },
       { name: '80% Deli Maps', value: interaction.options.get('eightydeli')?.value?.toString(), inline: true },
       { name: '100% Deli Maps', value: interaction.options.get('fulldeli')?.value?.toString(), inline: true },
-      { name: 'Ultimatum Reported', value: ultiReported.toString(), inline: true },
-      { name: 'Catalysts Reported', value: catalystReported.toString(), inline: true }
+      { name: 'Ultimatum Reported', value: ultiReported.toString(), inline: false }
     )
     .setTimestamp();
 
-  await replyWithEmbed(success, interaction, embeddedResponse);
+  await replyWithEmbed(result, interaction, embeddedResponse);
+  if (!!result && !result.error && !ultiReported) {
+    await interaction
+      .followUp({
+        ephemeral: true,
+        content: "Delirium reported successfully! Please be sure to also run `/heist report ultimatum`",
+      })
+  }
 }
 
 async function handleUltimatum(interaction) {
   const tabScreenshot = interaction.options.getAttachment("tabscreenshot");
   const blockNo = interaction.options.get("blockno").value;
   const result = await gSheets.heist.reportBlock(interaction);
-  const success = !!result && !result.error;
   const deliReported = await gSheets.heist.isSubcommandReported(blockNo, 'delirium');
   const embeddedResponse = new EmbedBuilder()
     .setColor(0x0099ff)
@@ -369,11 +372,11 @@ async function handleUltimatum(interaction) {
     .setDescription(`Request registered by @${interaction.user.username}.`)
     .setImage(tabScreenshot?.url)
     .addFields(
-      { name: 'Ultimatum Chests', value: interaction.options.get('ultimatumchests')?.value?.toString() },
-      { name: 'Rusted Ulti Scarabs', value: interaction.options.get('rustedulti')?.value?.toString() },
-      { name: 'Polished Ulti Scarabs', value: interaction.options.get('polishedulti')?.value?.toString() },
-      { name: 'Gilded Ulti Scarabs', value: interaction.options.get('gildedulti')?.value?.toString() },
-      { name: 'Winged Ulti Scarabs', value: interaction.options.get('wingedulti')?.value?.toString() },
+      { name: 'Ultimatum Chests', value: interaction.options.get('ultimatumchests')?.value?.toString(), inline: false },
+      { name: 'Rusted Ulti Scarabs', value: interaction.options.get('rustedulti')?.value?.toString(), inline: true },
+      { name: 'Polished Ulti Scarabs', value: interaction.options.get('polishedulti')?.value?.toString(), inline: true },
+      { name: 'Gilded Ulti Scarabs', value: interaction.options.get('gildedulti')?.value?.toString(), inline: true },
+      { name: 'Winged Ulti Scarabs', value: interaction.options.get('wingedulti')?.value?.toString(), inline: false },
       { name: 'Abrasive Catalysts', value: interaction.options.get('abrasive')?.value?.toString(), inline: true },
       { name: 'Accelerating Catalysts', value: interaction.options.get('accelerating')?.value?.toString(), inline: true },
       { name: 'Fertile Catalysts', value: interaction.options.get('fertile')?.value?.toString(), inline: true },
@@ -383,18 +386,24 @@ async function handleUltimatum(interaction) {
       { name: 'Prismatic Catalysts', value: interaction.options.get('prismatic')?.value?.toString(), inline: true },
       { name: 'Tempering Catalysts', value: interaction.options.get('tempering')?.value?.toString(), inline: true },
       { name: 'Turbulent Catalysts', value: interaction.options.get('turbulent')?.value?.toString(), inline: true },
-      { name: 'Unstable Catalysts', value: interaction.options.get('unstable')?.value?.toString(), inline: true },
+      { name: 'Unstable Catalysts', value: interaction.options.get('unstable')?.value?.toString(), inline: false },
       { name: 'Delirium Reported', value: deliReported.toString(), inline: true }
     )
     .setTimestamp();
 
-  await replyWithEmbed(success, interaction, embeddedResponse);
+  await replyWithEmbed(result, interaction, embeddedResponse);
+  if (!!result && !result.error && !deliReported) {
+    await interaction
+      .followUp({
+        ephemeral: true,
+        content: "Ultimatum reported successfully! Please be sure to also run `/heist report delirium`",
+      })
+  }
 }
 
 // async function handleCatalyst(interaction) {
 //   const blockNo = interaction.options.get("blockno").value;
 //   const result = await gSheets.heist.reportBlock(interaction);
-//   const success = !!result && !result.error;
 //   const deliReported = await gSheets.heist.isSubcommandReported(blockNo, 'delirium');
 //   const ultiReported = await gSheets.heist.isSubcommandReported(blockNo, 'ultimatum');
 //   const embeddedResponse = new EmbedBuilder()
@@ -418,11 +427,11 @@ async function handleUltimatum(interaction) {
 //     )
 //     .setTimestamp();
 
-//   await replyWithEmbed(success, interaction, embeddedResponse);
+//   await replyWithEmbed(result, interaction, embeddedResponse);
 // }
 
-async function replyWithEmbed(success, interaction, embeddedResponse) {
-  if (success) {
+async function replyWithEmbed(result, interaction, embeddedResponse) {
+  if (!!result && !result.error) {
     await interaction
       .reply({ embeds: [embeddedResponse], ephemeral: false })
       .then(() => console.log("Block report reply sent."))
@@ -433,7 +442,7 @@ async function replyWithEmbed(success, interaction, embeddedResponse) {
         ephemeral: true,
         content: "Something went wrong! Please ensure your block number is correct and try again. If you've already reported your result and need to make a change, please contact a mod.",
       })
-      .then(() => console.log("Google sheets error reply sent."))
+      .then(() => console.log("Google sheets error reply sent.", result?.error))
       .catch(console.error);
   }
 }
