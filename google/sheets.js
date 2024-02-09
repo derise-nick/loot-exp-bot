@@ -279,7 +279,7 @@ module.exports = {
      * @returns True if cells are populated in the sheet for given subcommand and block number
      */
     async isSubcommandReported(blockNo, subCommand, loadedRows = undefined) {
-      const reportStartIndex = subCommand == 'ultimatum' ? 5 : subCommand == 'catalysts' ? 11 : 21
+      const reportStartIndex = subCommand == 'ultimatum' ? 5 : 21
       if (loadedRows)
       {
         console.log(loadedRows.find((r) => r[0] == blockNo)?.[reportStartIndex])
@@ -298,8 +298,8 @@ function getValues(interaction) {
   switch (interaction.options.getSubcommand()) {
     case 'delirium':
       return getDeliValues(interaction);
-    case 'catalysts':
-      return getCatalystValues(interaction);
+    // case 'catalysts':
+    //   return getCatalystValues(interaction);
     case 'ultimatum':
       return getUltiValues(interaction);
   }
@@ -342,6 +342,19 @@ function getUltiValues(interaction) {
   const gildedulti = interaction.options.get('gildedulti')?.value?.toString()
   const wingedulti = interaction.options.get('wingedulti')?.value?.toString()
 
+  // Command merge start
+  const abrasive = interaction.options.get('abrasive')?.value?.toString()
+  const accelerating = interaction.options.get('accelerating')?.value?.toString()
+  const fertile = interaction.options.get('fertile')?.value?.toString()
+  const imbued = interaction.options.get('imbued')?.value?.toString()
+  const intrinsic = interaction.options.get('intrinsic')?.value?.toString()
+  const noxious = interaction.options.get('noxious')?.value?.toString()
+  const prismatic = interaction.options.get('prismatic')?.value?.toString()
+  const tempering = interaction.options.get('tempering')?.value?.toString()
+  const turbulent = interaction.options.get('turbulent')?.value?.toString()
+  const unstable = interaction.options.get('unstable')?.value?.toString()
+  // Command merge end
+
   let values = [
     null,
     null,
@@ -353,7 +366,19 @@ function getUltiValues(interaction) {
     rustedulti,
     polishedulti,
     gildedulti,
-    wingedulti
+    wingedulti,
+    // Command merge start
+    abrasive,
+    accelerating,
+    fertile,
+    imbued,
+    intrinsic,
+    noxious,
+    prismatic,
+    tempering,
+    turbulent,
+    unstable,
+    // Command merge end
   ];
   return values;
 }

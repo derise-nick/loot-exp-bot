@@ -50,6 +50,12 @@ module.exports = {
           subCommand
             .setName('ultimatum')
             .setDescription('Reports ultimatum chests, scarab rewards, and stash screenshot')
+            .addAttachmentOption((option) =>
+              option
+                .setRequired(true)
+                .setName("tabscreenshot")
+                .setDescription("The screenshot of the 12x12 tab of non-core drops")
+            )
             .addIntegerOption((option) =>
               option
                 .setName("blockno")
@@ -96,25 +102,6 @@ module.exports = {
                 .setDescription("How many winged ultimatum scarabs did you obtain?")
                 .setMinValue(0)
                 .setMaxValue(150)
-                .setRequired(true)
-            )
-            .addAttachmentOption((option) =>
-              option
-                .setRequired(true)
-                .setName("tabscreenshot")
-                .setDescription("The screenshot of the 12x12 tab of non-core drops")
-            )
-        )
-        .addSubcommand((subCommand) =>
-          subCommand
-            .setName('catalysts')
-            .setDescription('Reports catalyst rewards')
-            .addIntegerOption((option) =>
-              option
-                .setName("blockno")
-                .setDescription("What was your block number?")
-                .setMinValue(0)
-                .setMaxValue(50)
                 .setRequired(true)
             )
             .addIntegerOption((option) =>
@@ -303,9 +290,9 @@ module.exports = {
         case "delirium":
           await handleDelirium(interaction);
           break;
-        case "catalysts":
-          await handleCatalyst(interaction);
-          break;
+        // case "catalysts":
+        //   await handleCatalyst(interaction);
+        //   break;
         case "ultimatum":
           await handleUltimatum(interaction);
           break;
@@ -342,7 +329,6 @@ async function handleRequest(interaction) {
 async function handleDelirium(interaction) {
   const blockNo = interaction.options.get("blockno").value;
   const result = await gSheets.heist.reportBlock(interaction);
-  const catalystReported = await gSheets.heist.isSubcommandReported(blockNo, 'catalysts');
   const ultiReported = await gSheets.heist.isSubcommandReported(blockNo, 'ultimatum');
   const success = !!result && !result.error;
   const embeddedResponse = new EmbedBuilder()
@@ -375,7 +361,6 @@ async function handleUltimatum(interaction) {
   const blockNo = interaction.options.get("blockno").value;
   const result = await gSheets.heist.reportBlock(interaction);
   const success = !!result && !result.error;
-  const catalystReported = await gSheets.heist.isSubcommandReported(blockNo, 'catalysts');
   const deliReported = await gSheets.heist.isSubcommandReported(blockNo, 'delirium');
   const embeddedResponse = new EmbedBuilder()
     .setColor(0x0099ff)
@@ -389,26 +374,6 @@ async function handleUltimatum(interaction) {
       { name: 'Polished Ulti Scarabs', value: interaction.options.get('polishedulti')?.value?.toString() },
       { name: 'Gilded Ulti Scarabs', value: interaction.options.get('gildedulti')?.value?.toString() },
       { name: 'Winged Ulti Scarabs', value: interaction.options.get('wingedulti')?.value?.toString() },
-      { name: 'Catalysts Reported', value: catalystReported.toString(), inline: true },
-      { name: 'Delirium Reported', value: deliReported.toString(), inline: true }
-    )
-    .setTimestamp();
-
-  await replyWithEmbed(success, interaction, embeddedResponse);
-}
-
-async function handleCatalyst(interaction) {
-  const blockNo = interaction.options.get("blockno").value;
-  const result = await gSheets.heist.reportBlock(interaction);
-  const success = !!result && !result.error;
-  const deliReported = await gSheets.heist.isSubcommandReported(blockNo, 'delirium');
-  const ultiReported = await gSheets.heist.isSubcommandReported(blockNo, 'ultimatum');
-  const embeddedResponse = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setTitle(`Block #${blockNo} Catalysts Reported`)
-    .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
-    .setDescription(`Request registered by @${interaction.user.username}.`)
-    .addFields(
       { name: 'Abrasive Catalysts', value: interaction.options.get('abrasive')?.value?.toString(), inline: true },
       { name: 'Accelerating Catalysts', value: interaction.options.get('accelerating')?.value?.toString(), inline: true },
       { name: 'Fertile Catalysts', value: interaction.options.get('fertile')?.value?.toString(), inline: true },
@@ -419,13 +384,42 @@ async function handleCatalyst(interaction) {
       { name: 'Tempering Catalysts', value: interaction.options.get('tempering')?.value?.toString(), inline: true },
       { name: 'Turbulent Catalysts', value: interaction.options.get('turbulent')?.value?.toString(), inline: true },
       { name: 'Unstable Catalysts', value: interaction.options.get('unstable')?.value?.toString(), inline: true },
-      { name: 'Delirium Reported', value: deliReported.toString(), inline: true },
-      { name: 'Ultimatum Reported', value: ultiReported.toString(), inline: true },
+      { name: 'Delirium Reported', value: deliReported.toString(), inline: true }
     )
     .setTimestamp();
 
   await replyWithEmbed(success, interaction, embeddedResponse);
 }
+
+// async function handleCatalyst(interaction) {
+//   const blockNo = interaction.options.get("blockno").value;
+//   const result = await gSheets.heist.reportBlock(interaction);
+//   const success = !!result && !result.error;
+//   const deliReported = await gSheets.heist.isSubcommandReported(blockNo, 'delirium');
+//   const ultiReported = await gSheets.heist.isSubcommandReported(blockNo, 'ultimatum');
+//   const embeddedResponse = new EmbedBuilder()
+//     .setColor(0x0099ff)
+//     .setTitle(`Block #${blockNo} Catalysts Reported`)
+//     .setURL(`https://docs.google.com/spreadsheets/d/${sheetIds.heist}`)
+//     .setDescription(`Request registered by @${interaction.user.username}.`)
+//     .addFields(
+//       { name: 'Abrasive Catalysts', value: interaction.options.get('abrasive')?.value?.toString(), inline: true },
+//       { name: 'Accelerating Catalysts', value: interaction.options.get('accelerating')?.value?.toString(), inline: true },
+//       { name: 'Fertile Catalysts', value: interaction.options.get('fertile')?.value?.toString(), inline: true },
+//       { name: 'Imbued Catalysts', value: interaction.options.get('imbued')?.value?.toString(), inline: true },
+//       { name: 'Intrinsic Catalysts', value: interaction.options.get('intrinsic')?.value?.toString(), inline: true },
+//       { name: 'Noxious Catalysts', value: interaction.options.get('noxious')?.value?.toString(), inline: true },
+//       { name: 'Prismatic Catalysts', value: interaction.options.get('prismatic')?.value?.toString(), inline: true },
+//       { name: 'Tempering Catalysts', value: interaction.options.get('tempering')?.value?.toString(), inline: true },
+//       { name: 'Turbulent Catalysts', value: interaction.options.get('turbulent')?.value?.toString(), inline: true },
+//       { name: 'Unstable Catalysts', value: interaction.options.get('unstable')?.value?.toString(), inline: true },
+//       { name: 'Delirium Reported', value: deliReported.toString(), inline: true },
+//       { name: 'Ultimatum Reported', value: ultiReported.toString(), inline: true },
+//     )
+//     .setTimestamp();
+
+//   await replyWithEmbed(success, interaction, embeddedResponse);
+// }
 
 async function replyWithEmbed(success, interaction, embeddedResponse) {
   if (success) {
