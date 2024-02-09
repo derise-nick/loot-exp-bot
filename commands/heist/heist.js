@@ -49,7 +49,7 @@ module.exports = {
         .addSubcommand((subCommand) =>
           subCommand
             .setName('ultimatum')
-            .setDescription('Reports ultimatum chests and rewards')
+            .setDescription('Reports ultimatum chests, scarab rewards, and stash screenshot')
             .addIntegerOption((option) =>
               option
                 .setName("blockno")
@@ -108,7 +108,7 @@ module.exports = {
         .addSubcommand((subCommand) =>
           subCommand
             .setName('catalysts')
-            .setDescription('Reports ultimatum chests and rewards')
+            .setDescription('Reports catalyst rewards')
             .addIntegerOption((option) =>
               option
                 .setName("blockno")
